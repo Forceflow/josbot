@@ -1,6 +1,7 @@
 import time, sys
 
-print "Hello wot
+def main():
+	print "Hello world, from the main function"
 
 if __name__ == "__main__": main()
 
