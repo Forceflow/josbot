@@ -1,5 +1,5 @@
 # standard libs
-import time, sys, os.path
+import time, sys, os.path, codecs
 # additional libs
 import yaml, tweepy
 
@@ -11,6 +11,8 @@ def main():
 	print "Josbot starting..."
 	loadSettings("settings.yml")
 	api = setupAuth()
+	quotes = loadQuotes("quotes.txt")
+	#api.update_status(quotes[14])
 
 # Setup tweepy twitter auth, return api object
 def setupAuth():
@@ -20,7 +22,7 @@ def setupAuth():
 	api = tweepy.API(auth)
 	return api
 
-# Load settings from yaml file (if fail: write sample config)
+# Load settings from file (if fail: write sample config)
 def loadSettings(filename):
 	if os.path.exists("settings.yml"):
 		global settings
@@ -34,6 +36,7 @@ def loadSettings(filename):
 		print "Provide the required settings and re-run the program."
 		quit()
 
+# Save settings to file
 def saveSettings(filename):
 	yaml.dump(settings, open(filename, "w"), default_flow_style=False)
 		
@@ -48,4 +51,13 @@ def writeSampleConfig(filename):
 	}
 	yaml.dump(settings, open(filename, "w"), default_flow_style=False)
 	
+# Load quotes from txt file
+def loadQuotes(filename):
+	with codecs.open(filename,'r','utf-8') as f:
+    		content = [line.rstrip('\n') for line in f]
+	print content[14]
+	print len(content[14])
+	return content
+
+
 if __name__ == "__main__": main()
