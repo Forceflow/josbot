@@ -1,11 +1,11 @@
 import tweepy, time, sys, pickle, os.path, json
 
-
 # GLOBALS
 execfile('credentials.py')
 
 def main():
 	print "Josbot starting..."
+	writeSampleConfig()
 	tweet_index = importTweetIndex()
 	api = setupAuth()
 
@@ -31,9 +31,15 @@ def importTweetIndex():
 		
 #def readquotes():
 #	api.
-	
-	
 
-
+def writeSampleConfig():
+	settings = { 
+	"CONSUMER_KEY" : "KEYHERE",
+	"CONSUMER_SECRET" : "SECRETHERE",
+	"ACCESS_KEY" : "KEYHERE",
+	"ACCESS_SECRET" : "SECRETHERE"
+	}
+	json.dump(settings, open("settings.json", "w"), sort_keys=True, indent=4)
+	
 if __name__ == "__main__": main()
 
