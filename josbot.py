@@ -1,18 +1,38 @@
+# JosBot v0.1 - Started on 2015/02/04
+# Author: @jbaert
+
 # standard libs
-import time, sys, os.path, codecs
+import random, time, sys, os.path, codecs
 # additional libs
 import yaml, tweepy
 
 # GLOBALS
 settings = {}
+quotes = []
 
 # Main program loop
 def main():
 	print "Josbot starting..."
 	loadSettings("settings.yml")
 	api = setupAuth()
+	global quotes
 	quotes = loadQuotes("quotes.txt")
-	#api.update_status(quotes[14])
+
+	print "Starting main loop ..."
+	while settings["tweetindex"] < len(quotes):
+		# Tweet it
+		tweetQuote(api)
+		# Persist new settings (the tweetindex)
+		saveSettings("settings.yml")
+
+		# Sleeptime until next quote
+		sleeptime = random.randint(43200,86400)
+		m, s = divmod(sleeptime, 60)
+		h, m = divmod(m, 60)
+		print "Going to sleep for %d:%02d:%02d" % (h, m, s) 
+		time.sleep(sleeptime)
+
+	print "Ran out of quotes ... exiting"
 
 # Setup tweepy twitter auth, return api object
 def setupAuth():
@@ -28,13 +48,18 @@ def loadSettings(filename):
 		global settings
 		settings = yaml.load(open(filename, "r"))
 		print "Settings loaded"
-		print settings
 		
 	else:
 		writeSampleConfig(filename)
 		print "No settings file found - wrote a sample config to "+filename
 		print "Provide the required settings and re-run the program."
 		quit()
+
+# Tweet a quote given by tweetindex in settings to a certain api
+def tweetQuote(api):
+	print "Tweeting quote "+ str(settings["tweetindex"]) + " : "+ quotes[settings["tweetindex"]]
+	api.update_status(quotes[settings["tweetindex"]])
+	settings["tweetindex"] = settings["tweetindex"] + 1
 
 # Save settings to file
 def saveSettings(filename):
@@ -51,12 +76,11 @@ def writeSampleConfig(filename):
 	}
 	yaml.dump(settings, open(filename, "w"), default_flow_style=False)
 	
-# Load quotes from txt file
+# Load and sanitize quotes from utf-8 txt file
 def loadQuotes(filename):
 	with codecs.open(filename,'r','utf-8') as f:
-    		content = [line.rstrip('\n') for line in f]
-	print content[14]
-	print len(content[14])
+    		content = [line.rstrip('\n').strip()[0:140] for line in f]
+	print "Loaded " + str(len(content)) + " quotes"
 	return content
 
 
