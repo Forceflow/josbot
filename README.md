@@ -1,6 +1,5 @@
 # josbot
 
-
 ## What
 
 A Twitter bot that tweets random quotes from the play "De Jossen" by Tom Lanoye. Live on [@dejossen](twitter.com/dejossen).
@@ -16,4 +15,11 @@ Uit de originele pdf:
 > met SABAM
 
 Verondersteld wordt dat het in deze kwestie geen *opvoering* betreft maar een *verspreiding* van de tekst.
+
+## Technical
+
+Written in Python 2.6+. Required libraries: [Tweepy](http://www.tweepy.org/) and [YAML](http://www.yaml.org/). For example, in Ubuntu, `sudo apt-get install python-tweepy python-yaml` will install all requirements.
+
+
+First run of the program will create a settings file (*settings.yml*) in which you have to fill in Twitter API details.
 
