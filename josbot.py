@@ -1,4 +1,4 @@
-# JosBot v0.1 - Started on 2015/02/04
+# JosBot v0.2 - Started on 2015/02/04
 # Author: @jbaert
 
 # standard libs
@@ -20,6 +20,8 @@ def main():
 
 	print "Starting main loop ..."
 	while settings["tweetindex"] < len(quotes):
+		# Follow all our followers back
+		followBack(api)
 		# Sleeptime until next quote
 		sleeptime = random.randint(10800,86400)
 		m, s = divmod(sleeptime, 60)
@@ -59,6 +61,11 @@ def tweetQuote(api):
 	print "Tweeting quote "+ str(settings["tweetindex"]) + " : "+ quotes[settings["tweetindex"]]
 	api.update_status(quotes[settings["tweetindex"]])
 	settings["tweetindex"] = settings["tweetindex"] + 1
+
+# Follow all our followers back
+def followBack(api):
+	for follower in tweepy.Cursor(api.followers).items():
+		follower.follow()
 
 # Save settings to file
 def saveSettings(filename):
