@@ -20,10 +20,8 @@ def main():
 
 	print "Starting main loop ..."
 	while settings["tweetindex"] < len(quotes):
-		# Follow all our followers back
-		followBack(api)
 		# Sleeptime until next quote
-		sleeptime = random.randint(10800,86400)
+		sleeptime = random.randint(21600,86400)
 		m, s = divmod(sleeptime, 60)
 		h, m = divmod(m, 60)
 		print "Going to sleep for %d:%02d:%02d" % (h, m, s) 
@@ -32,6 +30,8 @@ def main():
 		tweetQuote(api)
 		# Persist new settings (the tweetindex)
 		saveSettings("settings.yml")
+		# Follow all our followers back
+		followBack(api)
 
 	print "Ran out of quotes ... exiting"
 
@@ -64,6 +64,7 @@ def tweetQuote(api):
 
 # Follow all our followers back
 def followBack(api):
+	print "Following all our followers ..."
 	for follower in tweepy.Cursor(api.followers).items():
 		follower.follow()
 
