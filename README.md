@@ -2,7 +2,7 @@
 
 ## What
 
-A Twitter bot that tweets random quotes from the play "De Jossen" by Tom Lanoye. Live on [@dejossen](twitter.com/dejossen).
+A Twitter bot that tweets random quotes from the play "De Jossen" by Tom Lanoye. Live on [@dejossen](http://twitter.com/dejossen).
 
 ## Tekst
 Tekst werd aangepast voor 140 tekens, vertrekkende van de [originele tekst](http://www.lanoye.be/tom/wp-content/uploads/2012/10/De-Jossen.-Val-en-revival-der-saamhorigheid.pdf) die in 2014 werd vrijgegeven op de site van Tom Lanoye. Hierbij werd geprobeerd om de consistentie van het origineel zoveel mogelijk te bewaren.
