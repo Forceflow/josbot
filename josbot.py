@@ -22,7 +22,7 @@ def main():
 	print "Starting main loop ..."
 	while settings["tweetindex"] < len(quotes):
 		# Sleeptime until next quote
-		sleeptime = random.randint(21600,86400)
+		sleeptime = random.randint(86204,200823)
 		m, s = divmod(sleeptime, 60)
 		h, m = divmod(m, 60)
 		print "Going to sleep for %d:%02d:%02d" % (h, m, s) 
