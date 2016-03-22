@@ -40,7 +40,7 @@ def main():
 def setupAuth():
 	print("Setting up Twitter auth")
 	auth = tweepy.OAuthHandler(settings['CONSUMER_KEY'], settings['CONSUMER_SECRET'])
-  	auth.set_access_token(settings['ACCESS_KEY'],settings['ACCESS_SECRET'])
+	auth.set_access_token(settings['ACCESS_KEY'],settings['ACCESS_SECRET'])
 	api = tweepy.API(auth, wait_on_rate_limit=True)
 	return api
 
@@ -73,9 +73,9 @@ def followBack(api):
 		if follower.id != api.me().id:
 			if follower.id in friends:
 				print("You already follow ", follower.screen_name)
-        else:
-            follower.follow()
-            print("Started following ", follower.screen_name)
+		else:
+			follower.follow()
+			print("Started following ", follower.screen_name)
 
 # Save settings to file
 def saveSettings(filename):
@@ -95,7 +95,7 @@ def writeSampleConfig(filename):
 # Load and sanitize quotes from utf-8 txt file
 def loadQuotes(filename):
 	with codecs.open(filename,'r','utf-8') as f:
-    		content = [line.rstrip('\n').strip()[0:140] for line in f]
+			content = [line.rstrip('\n').strip()[0:140] for line in f]
 	print("Loaded ", str(len(content)), " quotes")
 	return content
 
