@@ -17,6 +17,7 @@ def main():
 	api = setupAuth()
 	global quotes
 	quotes = loadQuotes("quotes.txt")
+	followBack(api)
 
 	print "Starting main loop ..."
 	while settings["tweetindex"] < len(quotes):
@@ -40,7 +41,7 @@ def setupAuth():
 	print "Setting up Twitter auth"
 	auth = tweepy.OAuthHandler(settings['CONSUMER_KEY'], settings['CONSUMER_SECRET'])
   	auth.set_access_token(settings['ACCESS_KEY'], settings['ACCESS_SECRET'])
-	api = tweepy.API(auth)
+	api = tweepy.API(auth, wait_on_rate_limit=True)
 	return api
 
 # Load settings from file (if fail: write sample config)
@@ -65,8 +66,16 @@ def tweetQuote(api):
 # Follow all our followers back
 def followBack(api):
 	print "Following all our followers ..."
+	friends = api.friends_ids(api.me().id)
+	print("You follow", len(friends), "users")
+
 	for follower in tweepy.Cursor(api.followers).items():
-		follower.follow()
+		if follower.id != api.me().id:
+			if follower.id in friends:
+				print("You already follow", follower.screen_name)
+        else:
+            follower.follow()
+            print("Started following", follower.screen_name)
 
 # Save settings to file
 def saveSettings(filename):
