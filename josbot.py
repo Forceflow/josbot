@@ -25,7 +25,7 @@ def main():
 		sleeptime = random.randint(86204,200823)
 		m, s = divmod(sleeptime, 60)
 		h, m = divmod(m, 60)
-		print("Going to sleep for %d:%02d:%02d" % (h, m, s)) 
+		print("Going to sleep for %d:%02d:%02d" % (h, m, s))
 		time.sleep(sleeptime)
 		# Tweet it
 		tweetQuote(api)
@@ -50,7 +50,7 @@ def loadSettings(filename):
 		global settings
 		settings = yaml.load(open(filename, "r"))
 		print("Settings loaded")
-		
+
 	else:
 		writeSampleConfig(filename)
 		print("No settings file found - wrote a sample config to ", filename)
@@ -80,10 +80,10 @@ def followBack(api):
 # Save settings to file
 def saveSettings(filename):
 	yaml.dump(settings, open(filename, "w"), default_flow_style=False)
-		
+
 # Write a sample config
 def writeSampleConfig(filename):
-	settings = { 
+	settings = {
 	"CONSUMER_KEY":"KEYHERE",
 	"CONSUMER_SECRET":"SECRETHERE",
 	"ACCESS_KEY":"KEYHERE",
@@ -91,7 +91,7 @@ def writeSampleConfig(filename):
 	"tweetindex":0
 	}
 	yaml.dump(settings, open(filename, "w"), default_flow_style=False)
-	
+
 # Load and sanitize quotes from utf-8 txt file
 def loadQuotes(filename):
 	with codecs.open(filename,'r','utf-8') as f:
