@@ -12,20 +12,20 @@ quotes = []
 
 # Main program loop
 def main():
-	print "Josbot starting..."
+	print("Josbot starting...")
 	loadSettings("settings.yml")
 	api = setupAuth()
 	global quotes
 	quotes = loadQuotes("quotes.txt")
 	followBack(api)
 
-	print "Starting main loop ..."
+	print("Starting main loop ...")
 	while settings["tweetindex"] < len(quotes):
 		# Sleeptime until next quote
 		sleeptime = random.randint(21600,86400)
 		m, s = divmod(sleeptime, 60)
 		h, m = divmod(m, 60)
-		print "Going to sleep for %d:%02d:%02d" % (h, m, s) 
+		print("Going to sleep for %d:%02d:%02d" % (h, m, s)) 
 		time.sleep(sleeptime)
 		# Tweet it
 		tweetQuote(api)
@@ -34,11 +34,11 @@ def main():
 		# Follow all our followers back
 		followBack(api)
 
-	print "Ran out of quotes ... exiting"
+	print("Ran out of quotes ... exiting")
 
 # Setup tweepy twitter auth, return api object
 def setupAuth():
-	print "Setting up Twitter auth"
+	print("Setting up Twitter auth")
 	auth = tweepy.OAuthHandler(settings['CONSUMER_KEY'], settings['CONSUMER_SECRET'])
   	auth.set_access_token(settings['ACCESS_KEY'], settings['ACCESS_SECRET'])
 	api = tweepy.API(auth, wait_on_rate_limit=True)
@@ -49,33 +49,33 @@ def loadSettings(filename):
 	if os.path.exists("settings.yml"):
 		global settings
 		settings = yaml.load(open(filename, "r"))
-		print "Settings loaded"
+		print("Settings loaded")
 		
 	else:
 		writeSampleConfig(filename)
-		print "No settings file found - wrote a sample config to "+filename
-		print "Provide the required settings and re-run the program."
+		print("No settings file found - wrote a sample config to ", filename)
+		print("Provide the required settings and re-run the program.")
 		quit()
 
 # Tweet a quote given by tweetindex in settings to a certain api
 def tweetQuote(api):
-	print "Tweeting quote "+ str(settings["tweetindex"]) + " : "+ quotes[settings["tweetindex"]]
+	print("Tweeting quote ", str(settings["tweetindex"]), " : ", quotes[settings["tweetindex"]])
 	api.update_status(quotes[settings["tweetindex"]])
 	settings["tweetindex"] = settings["tweetindex"] + 1
 
 # Follow all our followers back
 def followBack(api):
-	print "Following all our followers ..."
+	print("Following all our followers ...")
 	friends = api.friends_ids(api.me().id)
 	print("You follow", len(friends), "users")
 
 	for follower in tweepy.Cursor(api.followers).items():
 		if follower.id != api.me().id:
 			if follower.id in friends:
-				print("You already follow", follower.screen_name)
+				print("You already follow ", follower.screen_name)
         else:
             follower.follow()
-            print("Started following", follower.screen_name)
+            print("Started following ", follower.screen_name)
 
 # Save settings to file
 def saveSettings(filename):
@@ -96,7 +96,7 @@ def writeSampleConfig(filename):
 def loadQuotes(filename):
 	with codecs.open(filename,'r','utf-8') as f:
     		content = [line.rstrip('\n').strip()[0:140] for line in f]
-	print "Loaded " + str(len(content)) + " quotes"
+	print("Loaded ", str(len(content)), " quotes")
 	return content
 
 
