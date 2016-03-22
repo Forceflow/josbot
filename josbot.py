@@ -40,7 +40,7 @@ def main():
 def setupAuth():
 	print("Setting up Twitter auth")
 	auth = tweepy.OAuthHandler(settings['CONSUMER_KEY'], settings['CONSUMER_SECRET'])
-  	auth.set_access_token(settings['ACCESS_KEY'], settings['ACCESS_SECRET'])
+  	auth.set_access_token(settings['ACCESS_KEY'],settings['ACCESS_SECRET'])
 	api = tweepy.API(auth, wait_on_rate_limit=True)
 	return api
 
