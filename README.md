@@ -18,8 +18,7 @@ Verondersteld wordt dat het in deze kwestie geen *opvoering* betreft maar een *v
 
 ## Technical
 
-Written in Python 2.6+. Required libraries: [Tweepy](http://www.tweepy.org/) and [YAML](http://www.yaml.org/). For example, in Ubuntu, `sudo apt-get install python-tweepy python-yaml` will install all requirements.
-
+Written for Python 3.0+ (but will run with on 2.6 with some print quirks). Required libraries: [Tweepy](http://www.tweepy.org/) and [YAML](http://www.yaml.org/). For example, in Ubuntu, `sudo apt-get install python-tweepy python-yaml` will install all requirements.
 
 First run of the program will create a settings file (*settings.yml*) in which you have to fill in Twitter API details.
 

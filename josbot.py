@@ -72,10 +72,10 @@ def followBack(api):
 	for follower in tweepy.Cursor(api.followers).items():
 		if follower.id != api.me().id:
 			if follower.id in friends:
-				print("You already follow ", follower.screen_name)
+				print("You already follow ",follower.screen_name)
 		else:
 			follower.follow()
-			print("Started following ", follower.screen_name)
+			print("Started following ",follower.screen_name)
 
 # Save settings to file
 def saveSettings(filename):
