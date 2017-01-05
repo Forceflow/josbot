@@ -63,19 +63,37 @@ def tweetQuote(api):
 	api.update_status(quotes[settings["tweetindex"]])
 	settings["tweetindex"] = settings["tweetindex"] + 1
 
+# Count items in Cursor
+def countCursorItems(cursor):
+	c = 0
+	for item in cursor.items():
+		c+=1
+	return c
+
+# Cursor to list
+def cursorToList(cursor):
+	list = []
+	for item in cursor.items():
+		list.append(item)
+	return list
+
 # Follow all our followers back
 def followBack(api):
 	print("Following all our followers ...")
-	friends = api.friends_ids(api.me().id)
-	print("You follow", len(friends), "users")
+	friends = cursorToList(tweepy.Cursor(api.friends))
+	followers = cursorToList(tweepy.Cursor(api.followers))
+	print("You follow",len(friends), "users")
+	print("You are followed by",len(followers), "users")
 
-	for follower in tweepy.Cursor(api.followers).items():
-		if follower.id != api.me().id:
-			if follower.id in friends:
-				print("You already follow ",follower.screen_name)
+	for follower in followers:
+		# Checking if a friendship exists using exists_friendship is still in Tweepy docs, but not supported
+		# Instead, they refer to this show_friendship method which returns a JSON object based on the Twitter API
+		# It returns a tuple of Friendships. Yes, this is ugly. Update your docs, Tweepy.
+		if api.show_friendship(source_id=api.me().id,target_id=follower.id)[0].followed_by:
+			print("You already follow", follower.screen_name)
 		else:
-			follower.follow()
-			print("Started following ",follower.screen_name)
+			api.create_friendship(follower.id)
+			print("Started following", follower.screen_name)
 
 # Save settings to file
 def saveSettings(filename):
@@ -96,7 +114,7 @@ def writeSampleConfig(filename):
 def loadQuotes(filename):
 	with codecs.open(filename,'r','utf-8') as f:
 			content = [line.rstrip('\n').strip()[0:140] for line in f]
-	print("Loaded ", str(len(content)), " quotes")
+	print("Loaded", str(len(content)), "quotes")
 	return content
 
 
