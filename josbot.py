@@ -63,14 +63,7 @@ def tweetQuote(api):
 	api.update_status(quotes[settings["tweetindex"]])
 	settings["tweetindex"] = settings["tweetindex"] + 1
 
-# Count items in Cursor
-def countCursorItems(cursor):
-	c = 0
-	for item in cursor.items():
-		c+=1
-	return c
-
-# Cursor to list
+# Put all Cursor items in a list. This exhausts the Cursor, you can only do this once per Cursor
 def cursorToList(cursor):
 	list = []
 	for item in cursor.items():
