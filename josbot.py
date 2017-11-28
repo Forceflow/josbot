@@ -1,10 +1,14 @@
-# JosBot v0.2 - Started on 2015/02/04
+# JosBot v0.4 - Started on 2015/02/04
 # Author: @jbaert
 
 # standard libs
-import random, time, sys, os.path, codecs
+import random, time, sys, os.path, io
 # additional libs
 import yaml, tweepy
+
+# CONFIG
+SLEEPMIN = 86204
+SLEEPMAX = 200823
 
 # GLOBALS
 settings = {}
@@ -17,24 +21,29 @@ def main():
 	api = setupAuth()
 	global quotes
 	quotes = loadQuotes("quotes.txt")
+	resetQuotes("quotes.txt")
 	followBack(api)
 
 	print("Starting main loop ...")
-	while settings["tweetindex"] < len(quotes):
-		# Sleeptime until next quote
-		sleeptime = random.randint(86204,200823)
-		m, s = divmod(sleeptime, 60)
-		h, m = divmod(m, 60)
-		print("Going to sleep for %d:%02d:%02d" % (h, m, s))
-		time.sleep(sleeptime)
-		# Tweet it
-		tweetQuote(api)
-		# Persist new settings (the tweetindex)
-		saveSettings("settings.yml")
-		# Follow all our followers back
-		followBack(api)
-
-	print("Ran out of quotes ... exiting")
+	while True:
+		if settings["tweetindex"] < len(quotes):
+			# Sleeptime until next quote
+			sleeptime = random.randint(SLEEPMIN,SLEEPMAX)
+			m, s = divmod(sleeptime, 60)
+			h, m = divmod(m, 60)
+			print("Going to sleep for %d:%02d:%02d" % (h, m, s))
+			time.sleep(sleeptime)
+			# Tweet it
+			tweetQuote(api)
+			# Persist new settings (the tweetindex)
+			saveSettings("settings.yml")
+			# Follow all our followers back
+			followBack(api)
+		else:
+			print("Ran out of quotes ... shuffle and restart")
+			resetQuotes("quotes.txt")
+			settings["tweetindex"] = 0
+			saveSettings("settings.yml")
 
 # Setup tweepy twitter auth, return api object
 def setupAuth():
@@ -105,10 +114,17 @@ def writeSampleConfig(filename):
 
 # Load and sanitize quotes from utf-8 txt file
 def loadQuotes(filename):
-	with codecs.open(filename,'r','utf-8') as f:
+	with io.open(filename, mode="r", encoding="utf-8") as f:
 			content = [line.rstrip('\n').strip()[0:140] for line in f]
 	print("Loaded", str(len(content)), "quotes")
 	return content
 
+# Shuffle quotes and write them back to file
+def resetQuotes(filename):
+	random.shuffle(quotes)
+	file = io.open(filename, mode="w", encoding="utf-8")
+	file.truncate(0)
+	for quote in quotes:
+  		file.write("%s\n" % quote)
 
 if __name__ == "__main__": main()
