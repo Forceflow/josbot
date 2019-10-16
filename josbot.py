@@ -7,8 +7,8 @@ import random, time, sys, os.path, io
 import yaml, tweepy
 
 # CONFIG
-SLEEPMIN = 86204
-SLEEPMAX = 200823
+SLEEPMIN = 86400 # At least 24 hrs between tweets (60*60*24)
+SLEEPMAX = 172800 # At max 48 hrs between tweets (60*60*48)
 
 # GLOBALS
 settings = {}
@@ -21,24 +21,27 @@ def main():
 	api = setupAuth()
 	global quotes
 	quotes = loadQuotes("quotes.txt")
-	resetQuotes("quotes.txt")
-	followBack(api)
 
 	print("Starting main loop ...")
 	while True:
-		if settings["tweetindex"] < len(quotes):
-			# Sleeptime until next quote
+		if int(settings["tweetindex"]) < len(quotes):
+			# SLEEP until next quote
 			sleeptime = random.randint(SLEEPMIN,SLEEPMAX)
+			# An alternate syntax when dealing with multiple return values is to have Python "unwrap" the tuple 
+			# into the variables directly by specifying the same number of variables
+			# on the left-hand side of the assignment as there are returned from the function
 			m, s = divmod(sleeptime, 60)
 			h, m = divmod(m, 60)
 			print("Going to sleep for %d:%02d:%02d" % (h, m, s))
-			time.sleep(sleeptime)
-			# Tweet it
+			
+			
+			# TWEET quote
 			tweetQuote(api)
 			# Persist new settings (the tweetindex)
 			saveSettings("settings.yml")
 			# Follow all our followers back
 			followBack(api)
+			time.sleep(sleeptime)
 		else:
 			print("Ran out of quotes ... shuffle and restart")
 			resetQuotes("quotes.txt")
@@ -68,9 +71,13 @@ def loadSettings(filename):
 
 # Tweet a quote given by tweetindex in settings to a certain api
 def tweetQuote(api):
-	print("Tweeting quote ", str(settings["tweetindex"]), " : ", quotes[settings["tweetindex"]])
-	api.update_status(quotes[settings["tweetindex"]])
-	settings["tweetindex"] = settings["tweetindex"] + 1
+	# grab tweetindex as int
+	tweet_index=int(settings["tweetindex"])
+	# tweet quote
+	print("Tweeting quote ", tweet_index, " : ", quotes[tweet_index])
+	api.update_status(quotes[tweet_index])
+	# increment tweet_index
+	settings["tweetindex"] = tweet_index + 1
 
 # Put all Cursor items in a list. This exhausts the Cursor, you can only do this once per Cursor
 def cursorToList(cursor):
@@ -96,6 +103,7 @@ def followBack(api):
 		else:
 			api.create_friendship(follower.id)
 			print("Started following", follower.screen_name)
+	print("Reached end of followers list.")
 
 # Save settings to file
 def saveSettings(filename):
@@ -115,7 +123,7 @@ def writeSampleConfig(filename):
 # Load and sanitize quotes from utf-8 txt file
 def loadQuotes(filename):
 	with io.open(filename, mode="r", encoding="utf-8") as f:
-			content = [line.rstrip('\n').strip()[0:140] for line in f]
+		content = [line.rstrip('\n').strip()[0:140] for line in f]
 	print("Loaded", str(len(content)), "quotes")
 	return content
 
@@ -125,6 +133,6 @@ def resetQuotes(filename):
 	file = io.open(filename, mode="w", encoding="utf-8")
 	file.truncate(0)
 	for quote in quotes:
-  		file.write("%s\n" % quote)
+		file.write("%s\n" % quote)
 
 if __name__ == "__main__": main()
