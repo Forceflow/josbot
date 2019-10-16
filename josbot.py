@@ -57,7 +57,7 @@ def setupAuth():
 def loadSettings(filename):
 	if os.path.exists("settings.yml"):
 		global settings
-		settings = yaml.load(open(filename, "r"))
+		settings = yaml.load(open(filename, "r"), Loader=yaml.BaseLoader)
 		print("Settings loaded")
 
 	else:
