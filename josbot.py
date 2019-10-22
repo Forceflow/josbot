@@ -33,15 +33,13 @@ def main():
 			m, s = divmod(sleeptime, 60)
 			h, m = divmod(m, 60)
 			print("Going to sleep for %d:%02d:%02d" % (h, m, s))
-			
-			
+			time.sleep(sleeptime)
 			# TWEET quote
 			tweetQuote(api)
 			# Persist new settings (the tweetindex)
 			saveSettings("settings.yml")
 			# Follow all our followers back
 			followBack(api)
-			time.sleep(sleeptime)
 		else:
 			print("Ran out of quotes ... shuffle and restart")
 			resetQuotes("quotes.txt")
