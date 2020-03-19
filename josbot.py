@@ -14,6 +14,9 @@ SLEEPMAX = 172800 # At max 48 hrs between tweets (60*60*48)
 settings = {}
 quotes = []
 
+# DISABLE TWEETS
+dry_run = True;
+
 # Main program loop
 def main():
 	print("Josbot starting...")
@@ -27,17 +30,12 @@ def main():
 		if int(settings["tweetindex"]) < len(quotes):
 			# SLEEP until next quote
 			sleeptime = random.randint(SLEEPMIN,SLEEPMAX)
-			# An alternate syntax when dealing with multiple return values is to have Python "unwrap" the tuple 
-			# into the variables directly by specifying the same number of variables
-			# on the left-hand side of the assignment as there are returned from the function
-			m, s = divmod(sleeptime, 60)
+			m, s = divmod(sleeptime, 60) # An alternate syntax when dealing with multiple return values is to have Python "unwrap" the tuple 
 			h, m = divmod(m, 60)
 			print("Going to sleep for %d:%02d:%02d" % (h, m, s))
 			time.sleep(sleeptime)
 			# TWEET quote
-			tweetQuote(api)
-			# Persist new settings (the tweetindex)
-			saveSettings("settings.yml")
+			tweetQuote(api,dry_run)
 			# Follow all our followers back
 			followBack(api)
 		else:
@@ -60,7 +58,6 @@ def loadSettings(filename):
 		global settings
 		settings = yaml.load(open(filename, "r"), Loader=yaml.BaseLoader)
 		print("Settings loaded")
-
 	else:
 		writeSampleConfig(filename)
 		print("No settings file found - wrote a sample config to ", filename)
@@ -68,14 +65,18 @@ def loadSettings(filename):
 		quit()
 
 # Tweet a quote given by tweetindex in settings to a certain api
-def tweetQuote(api):
+def tweetQuote(api, dry_run):
 	# grab tweetindex as int
 	tweet_index=int(settings["tweetindex"])
-	# tweet quote
-	print("Tweeting quote ", tweet_index, " : ", quotes[tweet_index])
-	api.update_status(quotes[tweet_index])
-	# increment tweet_index
+	# tweet the quote
+	if not dry_run:
+		print("Tweeting quote ", tweet_index, " : ", quotes[tweet_index])
+		api.update_status(quotes[tweet_index])
+	else:
+		print("DRY RUN: Not really tweeting quote ", tweet_index, " : ", quotes[tweet_index])
+	# increment tweet_index and persist in settings
 	settings["tweetindex"] = tweet_index + 1
+	saveSettings("settings.yml")
 
 # Put all Cursor items in a list. This exhausts the Cursor, you can only do this once per Cursor
 def cursorToList(cursor):
@@ -85,6 +86,7 @@ def cursorToList(cursor):
 	return list
 
 # Follow all our followers back
+# TODO: rework this - I think the Tweepy friendship API changed again
 def followBack(api):
 	print("Following all our followers ...")
 	friends = cursorToList(tweepy.Cursor(api.friends))
@@ -96,13 +98,10 @@ def followBack(api):
 		# Checking if a friendship exists using exists_friendship is still in Tweepy docs, but not supported
 		# Instead, they refer to this show_friendship method which returns a JSON object based on the Twitter API
 		# It returns a tuple of Friendships. Yes, this is ugly. Update your docs, Tweepy.
-		if api.show_friendship(source_id=api.me().id,target_id=follower.id)[0].followed_by:
-			print("You already follow", follower.screen_name)
-		else:
+		if not api.show_friendship(source_id=api.me().id,target_id=follower.id)[0].followed_by:
 			api.create_friendship(follower.id)
 			print("Started following", follower.screen_name)
-	print("Reached end of followers list.")
-
+			
 # Save settings to file
 def saveSettings(filename):
 	yaml.dump(settings, open(filename, "w"), default_flow_style=False)
