@@ -15,7 +15,7 @@ settings = {}
 quotes = []
 
 # DISABLE TWEETS
-dry_run = True
+dry_run = False
 
 # Main program loop
 def main():
