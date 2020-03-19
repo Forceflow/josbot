@@ -15,19 +15,24 @@ settings = {}
 quotes = []
 
 # DISABLE TWEETS
-dry_run = True;
+dry_run = True
 
 # Main program loop
 def main():
-	print("Josbot starting...")
+	print("Josbot starting")
 	loadSettings("settings.yml")
-	api = setupAuth()
+	if dry_run:
+		print("Started in DRY RUN mode: No interaction with Twitter API will be made.")
+		api = "NULL"
+	else:
+		api = setupAuth()
 	global quotes
 	quotes = loadQuotes("quotes.txt")
 
-	print("Starting main loop ...")
+	print("Starting main loop")
 	while True:
 		if int(settings["tweetindex"]) < len(quotes):
+			followBack(api, dry_run)
 			# SLEEP until next quote
 			sleeptime = random.randint(SLEEPMIN,SLEEPMAX)
 			m, s = divmod(sleeptime, 60) # An alternate syntax when dealing with multiple return values is to have Python "unwrap" the tuple 
@@ -37,7 +42,7 @@ def main():
 			# TWEET quote
 			tweetQuote(api,dry_run)
 			# Follow all our followers back
-			followBack(api)
+			followBack(api, dry_run)
 		else:
 			print("Ran out of quotes ... shuffle and restart")
 			resetQuotes("quotes.txt")
@@ -78,29 +83,24 @@ def tweetQuote(api, dry_run):
 	settings["tweetindex"] = tweet_index + 1
 	saveSettings("settings.yml")
 
-# Put all Cursor items in a list. This exhausts the Cursor, you can only do this once per Cursor
-def cursorToList(cursor):
-	list = []
-	for item in cursor.items():
-		list.append(item)
-	return list
-
 # Follow all our followers back
 # TODO: rework this - I think the Tweepy friendship API changed again
-def followBack(api):
-	print("Following all our followers ...")
-	friends = cursorToList(tweepy.Cursor(api.friends))
-	followers = cursorToList(tweepy.Cursor(api.followers))
-	print("You follow",len(friends), "users")
-	print("You are followed by",len(followers), "users")
-
-	for follower in followers:
-		# Checking if a friendship exists using exists_friendship is still in Tweepy docs, but not supported
-		# Instead, they refer to this show_friendship method which returns a JSON object based on the Twitter API
-		# It returns a tuple of Friendships. Yes, this is ugly. Update your docs, Tweepy.
-		if not api.show_friendship(source_id=api.me().id,target_id=follower.id)[0].followed_by:
-			api.create_friendship(follower.id)
-			print("Started following", follower.screen_name)
+def followBack(api, dry_run):
+	if(dry_run):
+		print("DRY RUN: Follwing all followers")
+		return
+	else:
+		print("Following all our followers")
+	count = 0
+	for follower in tweepy.Cursor(api.followers).items():
+		time.sleep(30)
+		try:
+			follower.follow()
+		except tweepy.TweepError:
+			print("Can't follow more today, will try back later")
+			break
+		count += 1
+	print("You now follow", count, "people")
 			
 # Save settings to file
 def saveSettings(filename):
