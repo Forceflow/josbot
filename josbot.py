@@ -1,9 +1,11 @@
-# JosBot v0.4 - Started on 2015/02/04
+# JosBot v0.5
 # Author: @jbaert
 
-# standard libs
+VERSION="0.5"
+
+# standard python libs
 import random, time, sys, os.path, io, threading
-# additional libs
+# additional libs (get these from your OS repositories or pip)
 import yaml, tweepy
 
 # CONFIG
@@ -12,15 +14,17 @@ SLEEPMAX = 172800 # At max 48 hrs between tweets (60*60*48)
 
 # GLOBALS
 settings = {}
+settings_file = "settings.yml"
 quotes = []
+quotes_file = "quotes.txt"
 
 # DISABLE TWEETS
 dry_run = False
 
 def main():
-	print("Josbot starting")
+	print("Josbot", VERSION, "starting, loading settings from", settings_file)
 	# Grab settings from file
-	loadSettings("settings.yml")
+	loadSettings(settings_file)
 	# Setup AUTH
 	if dry_run:
 		print("Started in DRY RUN mode: No interaction with Twitter API will be made.")
@@ -29,7 +33,7 @@ def main():
 		api = setupAuth()
 	# Load quotes from file
 	global quotes
-	quotes = loadQuotes("quotes.txt")
+	quotes = loadQuotes(quotes_file)
 
 	# Prepare followback thread
 	followback_thread = threading.Thread(target=threaded_followBack, args=(api,dry_run))
@@ -38,8 +42,12 @@ def main():
 	print("Starting main loop")
 	while True:
 		if int(settings["tweetindex"]) < len(quotes):
+			# FOLLOWBACK
 			if not followback_thread.is_alive():
+				print("Launching Followback Thread")
 				followback_thread.start()
+			else:
+				print("Followback thread already running")
 			# SLEEP
 			sleeptime = random.randint(SLEEPMIN,SLEEPMAX)
 			m, s = divmod(sleeptime, 60) # An alternate syntax when dealing with multiple return values is to have Python "unwrap" the tuple 
@@ -48,18 +56,11 @@ def main():
 			time.sleep(sleeptime)
 			# TWEET
 			tweetQuote(api,dry_run)
-			# Launch or check the followback thread
-			if not followback_thread.is_alive():
-				print("Launching Followback Thread")
-				followback_thread.start()
-			else:
-				print("Followback thread already running")
-			
 		else:
 			print("Ran out of quotes ... shuffle and restart")
-			resetQuotes("quotes.txt")
+			resetQuotes(quotes_file)
 			settings["tweetindex"] = 0
-			saveSettings("settings.yml")
+			saveSettings(settings_file)
 
 # Setup tweepy twitter auth, return api object
 def setupAuth():
@@ -71,7 +72,7 @@ def setupAuth():
 
 # Load settings from file (if fail: write sample config)
 def loadSettings(filename):
-	if os.path.exists("settings.yml"):
+	if os.path.exists(filename):
 		global settings
 		settings = yaml.load(open(filename, "r"), Loader=yaml.BaseLoader)
 		print("Settings loaded")
@@ -93,7 +94,7 @@ def tweetQuote(api, dry_run):
 		print("DRY RUN: Not really tweeting quote ", tweet_index, " : ", quotes[tweet_index])
 	# increment tweet_index and persist in settings
 	settings["tweetindex"] = tweet_index + 1
-	saveSettings("settings.yml")
+	saveSettings(settings_file)
 
 # Follow all our followers back (threaded)
 def threaded_followBack(api, dry_run):
@@ -135,7 +136,7 @@ def writeSampleConfig(filename):
 def loadQuotes(filename):
 	with io.open(filename, mode="r", encoding="utf-8") as f:
 		content = [line.rstrip('\n').strip()[0:140] for line in f]
-	print("Loaded", str(len(content)), "quotes")
+	print("Loaded", str(len(content)), "quotes from", quotes_file)
 	return content
 
 # Shuffle quotes and write them back to file
