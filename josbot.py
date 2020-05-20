@@ -2,7 +2,7 @@
 # Author: @jbaert
 
 # standard libs
-import random, time, sys, os.path, io
+import random, time, sys, os.path, io, threading
 # additional libs
 import yaml, tweepy
 
@@ -17,32 +17,44 @@ quotes = []
 # DISABLE TWEETS
 dry_run = False
 
-# Main program loop
 def main():
 	print("Josbot starting")
+	# Grab settings from file
 	loadSettings("settings.yml")
+	# Setup AUTH
 	if dry_run:
 		print("Started in DRY RUN mode: No interaction with Twitter API will be made.")
 		api = "NULL"
 	else:
 		api = setupAuth()
+	# Load quotes from file
 	global quotes
 	quotes = loadQuotes("quotes.txt")
 
+	# Prepare followback thread
+	followback_thread = threading.Thread(target=threaded_followBack, args=(api,dry_run))
+
+	# Main loop
 	print("Starting main loop")
 	while True:
 		if int(settings["tweetindex"]) < len(quotes):
-			followBack(api, dry_run)
-			# SLEEP until next quote
+			if not followback_thread.is_alive():
+				followback_thread.start()
+			# SLEEP
 			sleeptime = random.randint(SLEEPMIN,SLEEPMAX)
 			m, s = divmod(sleeptime, 60) # An alternate syntax when dealing with multiple return values is to have Python "unwrap" the tuple 
 			h, m = divmod(m, 60)
 			print("Going to sleep for %d:%02d:%02d" % (h, m, s))
 			time.sleep(sleeptime)
-			# TWEET quote
+			# TWEET
 			tweetQuote(api,dry_run)
-			# Follow all our followers back
-			followBack(api, dry_run)
+			# Launch or check the followback thread
+			if not followback_thread.is_alive():
+				print("Launching Followback Thread")
+				followback_thread.start()
+			else:
+				print("Followback thread already running")
+			
 		else:
 			print("Ran out of quotes ... shuffle and restart")
 			resetQuotes("quotes.txt")
@@ -75,7 +87,7 @@ def tweetQuote(api, dry_run):
 	tweet_index=int(settings["tweetindex"])
 	# tweet the quote
 	if not dry_run:
-		print("Tweeting quote ", tweet_index, " : ", quotes[tweet_index])
+		print("Tweeting quote", tweet_index, ":", quotes[tweet_index])
 		api.update_status(quotes[tweet_index])
 	else:
 		print("DRY RUN: Not really tweeting quote ", tweet_index, " : ", quotes[tweet_index])
@@ -83,24 +95,26 @@ def tweetQuote(api, dry_run):
 	settings["tweetindex"] = tweet_index + 1
 	saveSettings("settings.yml")
 
-# Follow all our followers back
-# TODO: rework this - I think the Tweepy friendship API changed again
-def followBack(api, dry_run):
+# Follow all our followers back (threaded)
+def threaded_followBack(api, dry_run):
 	if(dry_run):
-		print("DRY RUN: Follwing all followers")
+		print("(FOLLOWBACK_THREAD) DRY RUN: Following all followers")
 		return
 	else:
-		print("Following all our followers")
+		print("(FOLLOWBACK_THREAD) Following all our followers")
+	# Actual follow code
 	count = 0
-	for follower in tweepy.Cursor(api.followers).items():
-		time.sleep(30)
+	followers = tweepy.Cursor(api.followers).items()
+	while True:
 		try:
+			follower = followers.next()
+			#print("(FOLLOWBACK_THREAD) Trying to follow", follower.screen_name)
 			follower.follow()
+			count += 1
 		except tweepy.TweepError:
-			print("Can't follow more today, will try back later")
-			break
-		count += 1
-	print("You now follow", count, "people")
+			print("(FOLLOWBACK_THREAD) Hit a limit during following, sleeping for 20mins")
+			time.sleep(60*60)
+	print("(FOLLOWBACK_THREAD) FINISHED: Followed", count, "people")
 			
 # Save settings to file
 def saveSettings(filename):
