@@ -1,3 +1,9 @@
+# Never commit settings file
+settings.yml
+
+# Common ignores
+.vscode/
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
