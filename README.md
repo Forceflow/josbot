@@ -1,4 +1,4 @@
-# josbot
+# josbot v0.5
 A Twitter bot that tweets random quotes from the play *De Jossen* by Tom Lanoye. Live on [@dejossen](http://twitter.com/dejossen).
 
 One could easily use this bot to tweet other content, by replacing the lines provided in `quotes.txt`. The code is very general and documented.
@@ -8,7 +8,7 @@ The full play got reduced to 426 lines of each 140 characters max, starting from
 
 ## Requirements
 
-Written for Python 3. Required libraries: [Tweepy](http://www.tweepy.org/) and [YAML](http://www.yaml.org/).  
+Written for Python 3. Required libraries: [Tweepy](http://www.tweepy.org/) for Twitter API interaction and [YAML](http://www.yaml.org/) for reading/writing the settings file.  
  * In most recent Ubuntu versions: `sudo apt-get install python python-tweepy python-yaml`
  * Using pip: `pip install tweepy pyaml`
 
