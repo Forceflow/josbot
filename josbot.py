@@ -105,11 +105,9 @@ def threaded_followBack(api, dry_run):
 		print("(FOLLOWBACK_THREAD) Following all our followers")
 	# Actual follow code
 	count = 0
-	followers = tweepy.Cursor(api.followers).items()
-	while True:
+	for follower in tweepy.Cursor(api.followers).items():
 		try:
-			follower = followers.next()
-			#print("(FOLLOWBACK_THREAD) Trying to follow", follower.screen_name)
+			print("(FOLLOWBACK_THREAD) Trying to follow", follower.screen_name)
 			follower.follow()
 			count += 1
 		except tweepy.TweepError:
