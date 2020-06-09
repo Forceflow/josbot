@@ -44,6 +44,7 @@ def main():
 		if int(settings["tweetindex"]) < len(quotes):
 			# FOLLOWBACK
 			if not followback_thread.is_alive():
+				followback_thread = threading.Thread(target=threaded_followBack, args=(api,dry_run)) # create new thread
 				print("Launching Followback Thread")
 				followback_thread.start()
 			else:
