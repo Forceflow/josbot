@@ -106,16 +106,17 @@ def threaded_followBack(api, dry_run):
 		print("(FOLLOWBACK_THREAD) Following all our followers")
 	# Actual follow code
 	count = 0
-	for follower in tweepy.Cursor(api.followers).items():
+	for follower in tweepy.Cursor(api.get_followers).items():
 		try:
 			# print("(FOLLOWBACK_THREAD) Trying to follow", follower.screen_name)
 			follower.follow()
 			count += 1
-		except tweepy.TweepError:
+		except tweepy.errors.TweepyException as e:
+			print("(FOLLOWBACK_THREAD): ", e)
 			print("(FOLLOWBACK_THREAD) Hit a limit during following, sleeping for 20mins")
 			time.sleep(60*60)
 	print("(FOLLOWBACK_THREAD) FINISHED: Followed", count, "people")
-			
+
 # Save settings to file
 def saveSettings(filename):
 	yaml.dump(settings, open(filename, "w"), default_flow_style=False)
