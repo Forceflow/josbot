@@ -9,8 +9,8 @@ The full play got reduced to 426 lines of each 140 characters max, starting from
 ## Requirements
 
 Written for Python 3. Required libraries: [Tweepy](http://www.tweepy.org/) for Twitter API interaction and [YAML](http://www.yaml.org/) for reading/writing the settings file.  
- * In most recent Ubuntu versions: `sudo apt-get install python python-tweepy python-yaml`
- * Using pip: `pip install tweepy pyaml`
+ * In most recent Ubuntu versions: `sudo apt-get install python3 python3-tweepy python3-yaml python3-mastodon`
+ * Using pip: `pip3 install tweepy pyaml Mastodon.py`
 
 First run of the program will create a settings file (*settings.yml*) in which you have to fill in Twitter API details.
 After that, run `python3 josbot.py` to start the bot.
