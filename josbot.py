@@ -7,6 +7,7 @@ VERSION="0.6"
 import random, time, sys, os.path, io, threading
 # additional libs (get these from your OS repositories or pip)
 import yaml, tweepy
+from mastodon import Mastodon
 
 PREFIX="Josbot   :"
 PREFIX_TW="Twitter  :"
@@ -28,6 +29,7 @@ def main():
 	
 	# Load settings and quotes
 	loadSettings()
+	saveSettings()
 	loadQuotes()
 
 	# Check if we're doing a dry run
@@ -37,21 +39,26 @@ def main():
 		print(PREFIX_MA, "Dry run, not really posting to Mastodon. FOR TESTING PURPOSES.")
 	
 	# Setup Twitter AUTH and FOLLOWBACK THREAD
-	api = "NULL"
+	twitter_api = "NULL"
 	if not settings["dry_run_twitter"]:
-		api = setupTwitterAuth()
+		twitter_api = setupTwitterAuth()
 		if settings["followback_twitter"]:
-			twitter_followback_thread = threading.Thread(target=twitterFollowBackThread, args=(api,))
+			twitter_followback_thread = threading.Thread(target=twitterFollowBackThread, args=(twitter_api,))
+
+	# Setup Mastodon AUTH
+	mastodon_api = "NULL"
+	if not settings["dry_run_mastodon"]:
+		mastodon_api = setupMastodonAuth()
 
 	print(PREFIX, "End of setup")
-
 	# MAIN LOOP
 	print(PREFIX, "-------------------------------")
 	print(PREFIX, "Starting main loop")
 	while True:
 		if int(settings["quote_index"]) < len(quotes):
 			# SLEEP
-			sleeploop()
+			#sleeploop()
+			time.sleep(0.2)
 
 			# GET CURRENT QUOTE
 			current_quote_index=int(settings["quote_index"])
@@ -60,9 +67,15 @@ def main():
 
 			# TWEET
 			if not settings["dry_run_twitter"]:
-				tweetQuote(api, current_quote)
+				tweetQuote(twitter_api, current_quote)
 			else:
-				print(PREFIX_TW, "(DRY RUN) Tweeting:", current_quote)
+				print(PREFIX_TW, "(DRY RUN) Tweeting")
+			
+			# TOOT
+			if not settings["dry_run_mastodon"]:
+				tootQuote(mastodon_api, current_quote)
+			else:
+				print(PREFIX_MA, "(DRY RUN) Tooting")
 
 			# INCREMENT QUOTE INDEX
 			settings["quote_index"] = current_quote_index + 1
@@ -70,7 +83,7 @@ def main():
 
 			# MANAGE TWITTER FOLLOWBACK THREAD
 			if not settings["dry_run_twitter"] and settings["followback_twitter"]:
-				manageTwitterFollowBackThread(api, twitter_followback_thread)
+				manageTwitterFollowBackThread(twitter_api, twitter_followback_thread)
 
 		else:
 			print(PREFIX, "Ran out of quotes ... shuffling and restarting")
@@ -89,17 +102,28 @@ def sleeploop():
 	# Do the sleeps
 	time.sleep(sleeptime)
 
+# Setup Mastodon auth
+def setupMastodonAuth():
+	print(PREFIX_MA, "Setting up Mastodon auth")
+	mastodon_api = Mastodon(access_token = settings['MASTODON_TOKEN'], api_base_url = settings['MASTODON_BASE_URL'])
+	return mastodon_api
+
+# Post a quote to Mastodon
+def tootQuote(api, quote):
+	print(PREFIX_MA, "Tooting")
+	api.status_post(quote)
+
 # Setup tweepy twitter auth, return api object
 def setupTwitterAuth():
 	print(PREFIX_TW, "Setting up Twitter auth")
-	auth = tweepy.OAuthHandler(settings['CONSUMER_KEY'], settings['CONSUMER_SECRET'])
-	auth.set_access_token(settings['ACCESS_KEY'],settings['ACCESS_SECRET'])
+	auth = tweepy.OAuthHandler(settings['TWITTER_CONSUMER_KEY'], settings['TWITTER_CONSUMER_SECRET'])
+	auth.set_access_token(settings['TWITTER_ACCESS_KEY'],settings['TWITTER_ACCESS_SECRET'])
 	api = tweepy.API(auth, wait_on_rate_limit=True)
 	return api
 
 # Tweet a quote given by tweetindex in settings to a certain api
 def tweetQuote(api, quote):
-	print("Tweeting quote :", quote)
+	print(PREFIX_TW, "Tweeting")
 	api.update_status(quote)
 
 # Manage the TwitterFollowBackThread: start it when it's not running
@@ -128,10 +152,12 @@ def twitterFollowBackThread(api):
 # Write a sample config
 def writeSampleConfig(filename):
 	settings = {
-	"CONSUMER_KEY":"KEYHERE",
-	"CONSUMER_SECRET":"SECRETHERE",
-	"ACCESS_KEY":"KEYHERE",
-	"ACCESS_SECRET":"SECRETHERE",
+	"TWITTER_CONSUMER_KEY":"KEYHERE",
+	"TWITTER_CONSUMER_SECRET":"SECRETHERE",
+	"TWITTER_ACCESS_KEY":"KEYHERE",
+	"TWITTER_ACCESS_SECRET":"SECRETHERE",
+	"MASTODON_TOKEN":"TOKENHERE",
+	"MASTODON_BASE_URL": "https://MASTODON_INSTANCE_URL_HERE/",
 	"dry_run_twitter": False,
 	"dry_run_mastodon": False,
 	"followback_twitter": False,
