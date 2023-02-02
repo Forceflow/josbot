@@ -9,6 +9,7 @@ import random, time, sys, os.path, io, threading
 import yaml, tweepy
 from mastodon import Mastodon
 
+# prefixes for logging
 PREFIX="Josbot   :"
 PREFIX_TW="Twitter  :"
 PREFIX_MA="Mastodon :"
@@ -29,7 +30,6 @@ def main():
 	
 	# Load settings and quotes
 	loadSettings()
-	saveSettings()
 	loadQuotes()
 
 	# Check if we're doing a dry run
@@ -56,9 +56,11 @@ def main():
 	print(PREFIX, "Starting main loop")
 	while True:
 		if int(settings["quote_index"]) < len(quotes):
-			# SLEEP
-			#sleeploop()
-			time.sleep(0.2)
+			# SLEEP (skip if we're in a dry run)
+			if settings["dry_run_twitter"] and settings["dry_run_mastodon"]:
+				time.sleep(0.2)
+			else:
+				sleeploop()
 
 			# GET CURRENT QUOTE
 			current_quote_index=int(settings["quote_index"])

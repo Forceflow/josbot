@@ -1,4 +1,4 @@
-# josbot v0.5
+# josbot v0.6
 A Twitter bot that tweets random quotes from the play *De Jossen* by Tom Lanoye. Live on [@dejossen](http://twitter.com/dejossen).
 
 One could easily use this bot to tweet other content, by replacing the lines provided in `quotes.txt`. The code is general and well documented.
@@ -13,11 +13,25 @@ Written for Python 3. Required libraries:
  * [YAML](http://www.yaml.org/) for reading/writing the settings file. 
 
 How to get these:
- * In most recent Ubuntu versions: `sudo apt-get install python3 python3-tweepy python3-yaml python3-mastodon`
- * Using pip: `pip3 install tweepy pyaml Mastodon.py`
+ * Ubuntu/Debian: `sudo apt-get install python3 python3-tweepy python3-yaml python3-mastodon`
+ * Using pip3: `pip3 install tweepy pyaml Mastodon.py`
 
-First run of the program will create a settings file (*settings.yml*) in which you have to fill in Twitter API details.
-After that, run `python3 josbot.py` to start the bot.
+## Setup & running
+Run ``python3 josbot.py``
+
+If no ``settings.yml`` is found, it will be created in the same directory as ``josbot.py``. This file is used for auth details and program settings.
+
+After configuring ``settings.yml``, run ``python3 josbot.py`` again to start the bot.
+
+The following options are available
+ * ``TWITTER_ACCESS_KEY``, ``TWITTER_ACCESS_SECRET``, ``TWITTER_CONSUMER_KEY`` and ``TWITTER_CONSUMER_SECRET``: Auth configuration for Twitter.
+ * ``MASTODON_TOKEN`` and ``MASTODON_BASE_URL``: Auth configuration for Mastodon. Base URL is the instance that hosts the account you want to post to (for example: ``https://mastodon.social/``).
+ * ``dry_run_mastodon`` and ``dry_run_twitter``: If you want to test the bot without actually posting to Twitter or Mastodon (a "dry run"), set this to ``true``. The time between posts will be reduced and the bot will print out the fake calls to output.
+ * ``followback_twitter``: Try to follow back all followers on Twitter (due to API changes this is finicky. Runs in a seperate thread.)
+ * ``followback_mastodon``: Try to follow back all followers on Mastodon. Currently **not implemented**.
+ * ``quote_index``: The current line of quotes.txt you're posting. This allows the bot to resume after a system reboot without starting all over again.
+
+ If the bot reaches the end of quotes.txt, the file is shuffled and the process starts over.
 
 ## Rights
 From the original PDF:
@@ -27,3 +41,8 @@ From the original PDF:
 > met SABAM
 
 I'm assuming running Josbot is not a *rendition* but a *distribution* of the source material, which is explicitly allowed.
+
+## Todo
+
+* Single-post and exit mode
+* Configurable settings file location
