@@ -19,7 +19,7 @@ quotes = []
 quotes_file = "quotes.txt"
 
 # DISABLE TWEETS
-dry_run = False
+dry_run = True
 
 def main():
 	print("Josbot", VERSION, "starting, loading settings from", settings_file)
@@ -30,41 +30,58 @@ def main():
 		print("Started in DRY RUN mode: No interaction with Twitter API will be made.")
 		api = "NULL"
 	else:
-		api = setupAuth()
+		api = setupTwitterAuth()
 	# Load quotes from file
 	global quotes
 	quotes = loadQuotes(quotes_file)
 
 	# Prepare followback thread
-	followback_thread = threading.Thread(target=threaded_followBack, args=(api,dry_run))
+	if not dry_run:
+		followback_thread = threading.Thread(target=threaded_followBack, args=(api,dry_run))
 
 	# Main loop
 	print("Starting main loop")
 	while True:
-		if int(settings["tweetindex"]) < len(quotes):
-			# FOLLOWBACK
-			if not followback_thread.is_alive():
-				followback_thread = threading.Thread(target=threaded_followBack, args=(api,dry_run)) # create new thread
-				print("Launching Followback Thread")
-				followback_thread.start()
-			else:
-				print("Followback thread already running")
+		if int(settings["quote_index"]) < len(quotes):
+			# TWITTER FOLLOWBACK
+			if not dry_run:
+				if not followback_thread.is_alive():
+					followback_thread = threading.Thread(target=threaded_followBack, args=(api,dry_run)) # create new thread
+					print("Launching Followback Thread")
+					followback_thread.start()
+				else:
+					print("Followback thread already running")
+			
 			# SLEEP
-			sleeptime = random.randint(SLEEPMIN,SLEEPMAX)
-			m, s = divmod(sleeptime, 60) # An alternate syntax when dealing with multiple return values is to have Python "unwrap" the tuple 
-			h, m = divmod(m, 60)
-			print("Going to sleep for %d:%02d:%02d" % (h, m, s))
-			time.sleep(sleeptime)
-			# TWEET
-			tweetQuote(api,dry_run)
+			#sleeptime = random.randint(SLEEPMIN,SLEEPMAX)
+			#m, s = divmod(sleeptime, 60) # An alternate syntax when dealing with multiple return values is to have Python "unwrap" the tuple 
+			#h, m = divmod(m, 60)
+			#print("Going to sleep for %d:%02d:%02d" % (h, m, s))
+			time.sleep(3)
+
+			# GET CURRENT QUOTE
+			current_quote_index=int(settings["quote_index"])
+			current_quote=quotes[current_quote_index]
+
+			if dry_run:
+				print("Dry run:", current_quote)
+
+			# TWEET CURRENT QUOTE
+			if not dry_run:
+				tweetQuote(api,current_quote)
+
+			# INCREMENT QUOTE INDEX
+			settings["quote_index"] = current_quote_index + 1
+			saveSettings(settings_file)
+
 		else:
 			print("Ran out of quotes ... shuffle and restart")
 			resetQuotes(quotes_file)
-			settings["tweetindex"] = 0
+			settings["quote_index"] = 0
 			saveSettings(settings_file)
 
 # Setup tweepy twitter auth, return api object
-def setupAuth():
+def setupTwitterAuth():
 	print("Setting up Twitter auth")
 	auth = tweepy.OAuthHandler(settings['CONSUMER_KEY'], settings['CONSUMER_SECRET'])
 	auth.set_access_token(settings['ACCESS_KEY'],settings['ACCESS_SECRET'])
@@ -84,18 +101,9 @@ def loadSettings(filename):
 		quit()
 
 # Tweet a quote given by tweetindex in settings to a certain api
-def tweetQuote(api, dry_run):
-	# grab tweetindex as int
-	tweet_index=int(settings["tweetindex"])
-	# tweet the quote
-	if not dry_run:
-		print("Tweeting quote", tweet_index, ":", quotes[tweet_index])
-		api.update_status(quotes[tweet_index])
-	else:
-		print("DRY RUN: Not really tweeting quote ", tweet_index, " : ", quotes[tweet_index])
-	# increment tweet_index and persist in settings
-	settings["tweetindex"] = tweet_index + 1
-	saveSettings(settings_file)
+def tweetQuote(api, quote):
+	print("Tweeting quote :", quote)
+	api.update_status(quote)
 
 # Follow all our followers back (threaded)
 def threaded_followBack(api, dry_run):
@@ -128,7 +136,7 @@ def writeSampleConfig(filename):
 	"CONSUMER_SECRET":"SECRETHERE",
 	"ACCESS_KEY":"KEYHERE",
 	"ACCESS_SECRET":"SECRETHERE",
-	"tweetindex":0
+	"quote_index":0
 	}
 	yaml.dump(settings, open(filename, "w"), default_flow_style=False)
 
