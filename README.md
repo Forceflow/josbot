@@ -1,7 +1,7 @@
 # josbot v0.6
-A Twitter / Mastodon bot that posts random quotes from the play *De Jossen* by Tom Lanoye. Live on [@dejossen](http://twitter.com/dejossen) and [@dejossen@mastodon-belgium.be](https://mastodon-belgium.be/@dejossen).
+A Twitter / Mastodon bot that posts random quotes from a TXT file. 
 
-One could easily use this bot to post other content, by replacing the lines provided in `quotes.txt`. The code is general and well documented.
+Currently used to post lines from the play *De Jossen* by Tom Lanoye. Live on [@dejossen](http://twitter.com/dejossen) and [@dejossen@mastodon-belgium.be](https://mastodon-belgium.be/@dejossen). One could easily use this bot to post other content, by replacing the lines provided in `quotes.txt`. The code is general and well documented.
 
 ## Text
 The full play got manually restructured to 426 lines of each 140 characters max, starting from the [original text](https://github.com/Forceflow/josbot/raw/main/De-Jossen.-Val-en-revival-der-saamhorigheid.pdf) which was released publicly on 2014 on Tom Lanoye's website. Tried to keep consistency when splitting lines in multiple posts, so there's never a split mid-sentence.
