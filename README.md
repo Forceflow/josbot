@@ -1,5 +1,5 @@
 # josbot v0.6
-A Twitter / Mastodon bot that posts random quotes from the play *De Jossen* by Tom Lanoye. Live on [@dejossen](http://twitter.com/dejossen).
+A Twitter / Mastodon bot that posts random quotes from the play *De Jossen* by Tom Lanoye. Live on [@dejossen](http://twitter.com/dejossen) and [@dejossen@mastodon-belgium.be](https://mastodon-belgium.be/@dejossen).
 
 One could easily use this bot to post other content, by replacing the lines provided in `quotes.txt`. The code is general and well documented.
 
