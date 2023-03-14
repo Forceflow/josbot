@@ -29,7 +29,7 @@ The following options are available
  * ``dry_run_mastodon`` and ``dry_run_twitter``: If you want to test the bot without actually posting to Twitter or Mastodon (a "dry run"), set this to ``true``. The time between posts will be reduced and the bot will print out the fake calls to output.
  * ``followback_twitter``: Try to follow back all followers on Twitter (due to API changes this is finicky. Runs in a seperate thread.)
  * ``followback_mastodon``: Try to follow back all followers on Mastodon. Currently **not implemented**.
- * ``quote_index``: The current line of quotes.txt you're posting. This allows the bot to resume after a system reboot without starting all over again.
+ * ``line_index``: The current line of quotes.txt you're posting. This allows the bot to resume after a system reboot without starting all over again.
 
  If the bot reaches the end of quotes.txt, the file is shuffled and the process starts over.
 

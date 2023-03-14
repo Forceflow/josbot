@@ -1,7 +1,7 @@
-# JosBot v0.6
+# JosBot v0.7
 # Author: @jbaert
 
-VERSION="0.6"
+VERSION="0.7"
 
 # standard python libs
 import random, time, sys, os.path, io, threading
