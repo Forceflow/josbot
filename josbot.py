@@ -20,78 +20,9 @@ SLEEPMAX = 172800 # At max 48 hrs between tweets (60*60*48)
 
 # GLOBALS
 settings_file = "settings.yml"
-quotes_file = "quotes.txt"
+lines_file = "lines.txt"
 settings = {}
-quotes = {}
-
-# MAIN PROGRAM LOOP
-def main():
-	print(PREFIX, "Version", VERSION, "starting")
-	
-	# Load settings and quotes
-	loadSettings()
-	loadQuotes()
-
-	# Check if we're doing a dry run
-	if settings["dry_run_twitter"]:
-		print(PREFIX_TW, "Dry run, not really posting to Twitter. FOR TESTING PURPOSES.")
-	if settings["dry_run_mastodon"]:
-		print(PREFIX_MA, "Dry run, not really posting to Mastodon. FOR TESTING PURPOSES.")
-	
-	# Setup Twitter AUTH and FOLLOWBACK THREAD
-	twitter_api = "NULL"
-	if not settings["dry_run_twitter"]:
-		twitter_api = setupTwitterAuth()
-		if settings["followback_twitter"]:
-			twitter_followback_thread = threading.Thread(target=twitterFollowBackThread, args=(twitter_api,))
-
-	# Setup Mastodon AUTH
-	mastodon_api = "NULL"
-	if not settings["dry_run_mastodon"]:
-		mastodon_api = setupMastodonAuth()
-
-	print(PREFIX, "End of setup")
-	# MAIN LOOP
-	print(PREFIX, "-------------------------------")
-	print(PREFIX, "Starting main loop")
-	while True:
-		if int(settings["quote_index"]) < len(quotes):
-			# SLEEP (skip if we're in a dry run)
-			if settings["dry_run_twitter"] and settings["dry_run_mastodon"]:
-				time.sleep(0.2)
-			else:
-				sleeploop()
-
-			# GET CURRENT QUOTE
-			current_quote_index=int(settings["quote_index"])
-			current_quote=quotes[current_quote_index]
-			print(PREFIX, "Current quote:", current_quote, "[", current_quote_index,"]")
-
-			# TWEET
-			if not settings["dry_run_twitter"]:
-				tweetQuote(twitter_api, current_quote)
-			else:
-				print(PREFIX_TW, "(DRY RUN) Tweeting")
-			
-			# TOOT
-			if not settings["dry_run_mastodon"]:
-				tootQuote(mastodon_api, current_quote)
-			else:
-				print(PREFIX_MA, "(DRY RUN) Tooting")
-
-			# INCREMENT QUOTE INDEX
-			settings["quote_index"] = current_quote_index + 1
-			saveSettings()
-
-			# MANAGE TWITTER FOLLOWBACK THREAD
-			if not settings["dry_run_twitter"] and settings["followback_twitter"]:
-				manageTwitterFollowBackThread(twitter_api, twitter_followback_thread)
-
-		else:
-			print(PREFIX, "Ran out of quotes ... shuffling and restarting")
-			resetQuotes()
-			settings["quote_index"] = 0
-			saveSettings()
+lines = {}
 
 # Function to go to sleep for a random period between SLEEPMIN and SLEEPMAX
 def sleeploop():
@@ -110,10 +41,10 @@ def setupMastodonAuth():
 	mastodon_api = Mastodon(access_token = settings['MASTODON_TOKEN'], api_base_url = settings['MASTODON_BASE_URL'])
 	return mastodon_api
 
-# Post a quote to Mastodon
-def tootQuote(api, quote):
+# Post a line to Mastodon
+def tootLine(api, line):
 	print(PREFIX_MA, "Tooting")
-	api.status_post(quote)
+	api.status_post(line)
 
 # Setup tweepy twitter auth, return api object
 def setupTwitterAuth():
@@ -123,10 +54,10 @@ def setupTwitterAuth():
 	api = tweepy.API(auth, wait_on_rate_limit=True)
 	return api
 
-# Tweet a quote given by tweetindex in settings to a certain api
-def tweetQuote(api, quote):
+# Tweet a line
+def tweetLine(api, line):
 	print(PREFIX_TW, "Tweeting")
-	api.update_status(quote)
+	api.update_status(line)
 
 # Manage the TwitterFollowBackThread: start it when it's not running
 def manageTwitterFollowBackThread(api, thread):
@@ -164,7 +95,9 @@ def writeSampleConfig(filename):
 	"dry_run_mastodon": False,
 	"followback_twitter": False,
 	"followback_mastodon": False,
-	"quote_index":0
+	"loop:": True,
+	"loop_shuffle": True,
+	"line_index":0
 	}
 	yaml.dump(settings, open(filename, "w"), default_flow_style=False)
 
@@ -185,19 +118,93 @@ def saveSettings():
 	yaml.dump(settings, open(settings_file, "w"), default_flow_style=False)
 
 # Load and sanitize quotes from utf-8 txt file
-def loadQuotes():
-	with io.open(quotes_file, mode="r", encoding="utf-8") as f:
+def loadLines():
+	with io.open(lines_file, mode="r", encoding="utf-8") as f:
 		content = [line.rstrip('\n').strip()[0:140] for line in f]
-	global quotes
-	quotes = content
-	print(PREFIX, "Loaded", str(len(content)), "quotes from", quotes_file)
+	global lines
+	lines = content
+	print(PREFIX, "Loaded", str(len(content)), "lines from", lines_file)
 
 # Shuffle quotes and write them back to file
-def resetQuotes():
-	random.shuffle(quotes)
-	file = io.open(quotes_file, mode="w", encoding="utf-8")
+def shuffleLines():
+	random.shuffle(lines)
+	file = io.open(lines_file, mode="w", encoding="utf-8")
 	file.truncate(0)
-	for quote in quotes:
-		file.write("%s\n" % quote)
+	for line in lines:
+		file.write("%s\n" % line)
 
+# MAIN PROGRAM LOOP
+def main():
+	print(PREFIX, "Version", VERSION, "starting")
+	
+	# Load settings and lines
+	loadSettings()
+	loadLines()
+
+	# Check if we're doing a dry run
+	if settings["dry_run_twitter"]:
+		print(PREFIX_TW, "Dry run, not really posting to Twitter. FOR TESTING PURPOSES.")
+	if settings["dry_run_mastodon"]:
+		print(PREFIX_MA, "Dry run, not really posting to Mastodon. FOR TESTING PURPOSES.")
+	
+	# Setup Twitter AUTH and FOLLOWBACK THREAD
+	twitter_api = "NULL"
+	if not settings["dry_run_twitter"]:
+		twitter_api = setupTwitterAuth()
+		if settings["followback_twitter"]:
+			twitter_followback_thread = threading.Thread(target=twitterFollowBackThread, args=(twitter_api,))
+
+	# Setup Mastodon AUTH
+	mastodon_api = "NULL"
+	if not settings["dry_run_mastodon"]:
+		mastodon_api = setupMastodonAuth()
+
+	print(PREFIX, "End of setup")
+	# MAIN LOOP
+	print(PREFIX, "-------------------------------")
+	print(PREFIX, "Starting main loop")
+	while True:
+		if int(settings["line_index"]) < len(lines):
+			# SLEEP (skip if we're in a dry run)
+			if settings["dry_run_twitter"] and settings["dry_run_mastodon"]:
+				time.sleep(0.2)
+			else:
+				sleeploop()
+
+			# GET CURRENT QUOTE
+			current_index=int(settings["line_index"])
+			current_line=lines[current_index]
+			print(PREFIX, "Current line:", current_line, "[", current_index,"]")
+
+			# TWEET
+			if not settings["dry_run_twitter"]:
+				tweetLine(twitter_api, current_line)
+			else:
+				print(PREFIX_TW, "(DRY RUN) Tweeting")
+			
+			# TOOT
+			if not settings["dry_run_mastodon"]:
+				tootLine(mastodon_api, current_line)
+			else:
+				print(PREFIX_MA, "(DRY RUN) Tooting")
+
+			# INCREMENT QUOTE INDEX
+			settings["line_index"] = current_index + 1
+			saveSettings()
+
+			# MANAGE TWITTER FOLLOWBACK THREAD
+			if not settings["dry_run_twitter"] and settings["followback_twitter"]:
+				manageTwitterFollowBackThread(twitter_api, twitter_followback_thread)
+
+		else:
+			print(PREFIX, "Ran out of lines")
+			if not settings["loop"]:
+				print(PREFIX, "Looping is set to false, so exiting")
+				quit()
+			if(settings["loop_shuffle"]):
+				print(PREFIX, "Shuffling lines before restarting")
+				shuffleLines()
+			settings["line_index"] = 0
+			saveSettings()
+			print(PREFIX, "Restarting loop")
 if __name__ == "__main__": main()
