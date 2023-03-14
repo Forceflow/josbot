@@ -1,10 +1,5 @@
-# josbot v0.6
-A Twitter / Mastodon bot that posts random quotes from a TXT file. 
-
-Currently used to post lines from the play *De Jossen* by Tom Lanoye. Live on [@dejossen](http://twitter.com/dejossen) and [@dejossen@mastodon-belgium.be](https://mastodon-belgium.be/@dejossen). One could easily use this bot to post other content, by replacing the lines provided in `quotes.txt`. The code is general and well documented.
-
-## Text
-The full play got manually restructured to 426 lines of each 140 characters max, starting from the [original text](https://github.com/Forceflow/josbot/raw/main/De-Jossen.-Val-en-revival-der-saamhorigheid.pdf) which was released publicly on 2014 on Tom Lanoye's website. Tried to keep consistency when splitting lines in multiple posts, so there's never a split mid-sentence.
+# josbot v0.7
+A Twitter / Mastodon bot that posts lines from a TXT file.
 
 ## Requirements
 Written for Python 3. Required libraries: 
@@ -29,11 +24,23 @@ The following options are available
  * ``dry_run_mastodon`` and ``dry_run_twitter``: If you want to test the bot without actually posting to Twitter or Mastodon (a "dry run"), set this to ``true``. The time between posts will be reduced and the bot will print out the fake calls to output.
  * ``followback_twitter``: Try to follow back all followers on Twitter (due to API changes this is finicky. Runs in a seperate thread.)
  * ``followback_mastodon``: Try to follow back all followers on Mastodon. Currently **not implemented**.
- * ``line_index``: The current line of quotes.txt you're posting. This allows the bot to resume after a system reboot without starting all over again.
+ * ``loop``: Start over when the end of the file is reached (default: true)
+ * ``loop_shuffle``: Shuffle the lines in the lines.txt file when starting over (default: true)
+ * ``line_index``: The current line of lines.txt you're posting. This allows the bot to resume after a system reboot without starting all over again.
 
  If the bot reaches the end of quotes.txt, the file is shuffled and the process starts over.
+ 
+ ## Todo
 
-## Rights
+* Single-post and exit mode
+* Configurable settings file location
+ 
+# Currently deployed as [@dejossen](http://twitter.com/dejossen) and [@dejossen@mastodon-belgium.be](https://mastodon-belgium.be/@dejossen)
+
+Currently used to post lines from the play *De Jossen* by Tom Lanoye. That's where the name of this bot comes from. Live on [@dejossen](http://twitter.com/dejossen) and [dejossen@mastodon-belgium.be](https://mastodon-belgium.be/@dejossen). In march 2023, I rewrote this bot so it became more general and can be used for any .txt-based lines of content.
+
+The full play got manually restructured to 426 lines of each 140 characters max, starting from the [original text](https://github.com/Forceflow/josbot/raw/main/De-Jossen.-Val-en-revival-der-saamhorigheid.pdf) which was released publicly on 2014 on Tom Lanoye's website. Tried to keep consistency when splitting lines in multiple posts, so there's never a split mid-sentence.
+
 From the original PDF:
 
 > De tekst van De Jossen. Val en revival der saamhorigheid mag vrij worden gedownload en verspreid.
@@ -42,7 +49,4 @@ From the original PDF:
 
 I'm assuming running Josbot is not a *rendition* but a *distribution* of the source material, which is explicitly allowed.
 
-## Todo
 
-* Single-post and exit mode
-* Configurable settings file location
