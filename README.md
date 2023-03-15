@@ -14,18 +14,17 @@ How to get these:
 ## Setup & running
 Run ``python3 josbot.py``
 
-If no ``settings.yml`` is found, it will be created in the same directory as ``josbot.py``. This file is used for auth details and program settings.
-
-After configuring ``settings.yml``, run ``python3 josbot.py`` again to start the bot.
+* If no ``settings.yml`` is found, it will be created in the same directory as ``josbot.py``. This file is used for auth details and program settings.
+* After configuring ``settings.yml``, run ``python3 josbot.py`` again to start the bot.
 
 The following options are available
  * ``TWITTER_ACCESS_KEY``, ``TWITTER_ACCESS_SECRET``, ``TWITTER_CONSUMER_KEY`` and ``TWITTER_CONSUMER_SECRET``: Auth configuration for Twitter, using the [Oauth 1.0a (User Context)](https://developer.twitter.com/en/docs/tutorials/authenticating-with-twitter-api-for-enterprise/authentication-method-overview#oauth1.0a) method.
- * ``MASTODON_TOKEN`` and ``MASTODON_BASE_URL``: Auth configuration for Mastodon. Base URL is the instance that hosts the account you want to post to (for example: ``https://mastodon.social/``).
- * ``dry_run_mastodon`` and ``dry_run_twitter``: If you want to test the bot without actually posting to Twitter or Mastodon (a "dry run"), set this to ``true``. The time between posts will be reduced and the bot will print out the fake calls to output.
+ * ``MASTODON_TOKEN`` and ``MASTODON_BASE_URL``: Auth configuration for Mastodon. ``MASTODON_BASE_URL`` is the instance that hosts the account you want to post to (for example: ``https://mastodon.social/``).
+ * ``dry_run_mastodon`` and ``dry_run_twitter``: If you want to test the bot without actually posting to Twitter or Mastodon (a "dry run"), set this to ``true``. The time between posts will be reduced to 0.2 seconds and the bot will print out the fake calls to output. Good for testing and going through all possible lines fast.
  * ``followback_twitter``: Try to follow back all followers on Twitter (due to API changes this is finicky. Runs in a seperate thread.)
  * ``followback_mastodon``: Try to follow back all followers on Mastodon. Currently **not implemented**.
  * ``loop``: Start over when the end of the file is reached (default: true)
- * ``loop_shuffle``: Shuffle the lines in the `lines.txt` file when starting over (default: true)
+ * ``loop_shuffle``: Shuffle the lines in the `lines.txt` file when starting over (default: true). This is ignored when ``loop`` is set to false.
  * ``line_index``: The current line of lines.txt you're posting. This allows the bot to resume after a system reboot without starting all over again.
 
  If the bot reaches the end of `lines.txt`, the file is shuffled and the process starts over.
