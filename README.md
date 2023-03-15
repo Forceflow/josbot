@@ -25,14 +25,15 @@ The following options are available
  * ``followback_twitter``: Try to follow back all followers on Twitter (due to API changes this is finicky. Runs in a seperate thread.)
  * ``followback_mastodon``: Try to follow back all followers on Mastodon. Currently **not implemented**.
  * ``loop``: Start over when the end of the file is reached (default: true)
- * ``loop_shuffle``: Shuffle the lines in the lines.txt file when starting over (default: true)
+ * ``loop_shuffle``: Shuffle the lines in the `lines.txt` file when starting over (default: true)
  * ``line_index``: The current line of lines.txt you're posting. This allows the bot to resume after a system reboot without starting all over again.
 
- If the bot reaches the end of quotes.txt, the file is shuffled and the process starts over.
+ If the bot reaches the end of `lines.txt`, the file is shuffled and the process starts over.
  
  ## Todo
 
 * Single-post and exit mode
+* Configurable wait time between lines
 * Configurable settings file location
  
 # Currently deployed as [@dejossen](http://twitter.com/dejossen) and [@dejossen@mastodon-belgium.be](https://mastodon-belgium.be/@dejossen)
