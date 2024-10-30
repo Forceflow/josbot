@@ -9,7 +9,7 @@ Written for Python 3. Required libraries:
 
 How to get these:
  * Ubuntu/Debian: `sudo apt-get install python3 python3-tweepy python3-yaml python3-mastodon`
- * Using pip3: `pip3 install tweepy pyaml Mastodon.py`
+ * Using pip3: `pip3 install tweepy pyaml Mastodon.py` (or `pip3 install -r requirements.txt`)
 
 ## Setup & running
 Run ``python3 josbot.py``
