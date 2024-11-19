@@ -1,18 +1,20 @@
 # JosBot v0.7
 # Author: @jbaert
 
-VERSION="0.7"
+VERSION="0.8"
 
 # standard python libs
 import random, time, sys, os.path, io, threading
 # additional libs (get these from your OS repositories or pip)
 import yaml, tweepy
 from mastodon import Mastodon
+from atproto import Client
 
 # prefixes for logging
 PREFIX="Josbot   :"
 PREFIX_TW="Twitter  :"
 PREFIX_MA="Mastodon :"
+PREFIX_BS="BlueSky  :"
 
 # CONFIG
 SLEEPMIN = 86400 # At least 24 hrs between tweets (60*60*24)
@@ -41,12 +43,7 @@ def setupMastodonAuth():
 	mastodon_api = Mastodon(access_token = settings['MASTODON_TOKEN'], api_base_url = settings['MASTODON_BASE_URL'])
 	return mastodon_api
 
-# Post a line to Mastodon
-def tootLine(api, line):
-	print(PREFIX_MA, "Tooting")
-	api.status_post(line)
-
-# Setup tweepy twitter auth, return api object
+# Setup Twitter auth
 def setupTwitterAuth():
 	print(PREFIX_TW, "Setting up Twitter auth")
 	auth = tweepy.OAuthHandler(settings['TWITTER_CONSUMER_KEY'], settings['TWITTER_CONSUMER_SECRET'])
@@ -54,10 +51,27 @@ def setupTwitterAuth():
 	api = tweepy.API(auth, wait_on_rate_limit=True)
 	return api
 
-# Tweet a line
+# Setup Bluesky auth
+def setupBlueskyAuth():
+	print(PREFIX_BS, "Setting up Bluesky auth")
+	client = Client()
+	client.login(settings['BLUESKY_USERNAME'], settings['BLUESKY_PASS'])
+	return client
+
+# Skeet a line (Bluesky)
+def skeetLine(api, line):
+	print(PREFIX_BS, "Skeeting")
+	ret = api.send_post(line)
+
+# Tweet a line (Twitter)
 def tweetLine(api, line):
 	print(PREFIX_TW, "Tweeting")
 	api.update_status(line)
+
+# Toot a line (Mastodon)
+def tootLine(api, line):
+	print(PREFIX_MA, "Tooting")
+	api.status_post(line)
 
 # Manage the TwitterFollowBackThread: start it when it's not running
 def manageTwitterFollowBackThread(api, thread):
@@ -85,17 +99,20 @@ def twitterFollowBackThread(api):
 # Write a sample config
 def writeSampleConfig(filename):
 	settings = {
+	"TWITTER_ENABLED": True,
 	"TWITTER_CONSUMER_KEY":"KEYHERE",
 	"TWITTER_CONSUMER_SECRET":"SECRETHERE",
 	"TWITTER_ACCESS_KEY":"KEYHERE",
 	"TWITTER_ACCESS_SECRET":"SECRETHERE",
+	"TWITTER_FOLLOWBACK": False,
+	"MASTODON_ENABLED": True,
 	"MASTODON_TOKEN":"TOKENHERE",
 	"MASTODON_BASE_URL": "https://MASTODON_INSTANCE_URL_HERE/",
-	"dry_run_twitter": False,
-	"dry_run_mastodon": False,
-	"followback_twitter": False,
-	"followback_mastodon": False,
-	"loop:": True,
+	"MASTODON_FOLLOWBACK" : False,
+	"BLUESKY_ENABLED": True,
+	"BLUESKY_USERNAME": "username",
+	"BLUESKY_PASS": "password",
+	"loop": True,
 	"loop_shuffle": True,
 	"line_index":0
 	}
@@ -109,7 +126,7 @@ def loadSettings():
 		print(PREFIX, "Loaded", len(settings), "settings from", settings_file)
 	else:
 		writeSampleConfig(settings_file)
-		print(PREFIX, "No settings file found - wrote a sample config to ", settings_file)
+		print(PREFIX, "No settings file found - wrote a sample config to", settings_file)
 		print(PREFIX, "Provide the required settings and re-run the program.")
 		quit()
 
@@ -141,23 +158,30 @@ def main():
 	loadSettings()
 	loadLines()
 
-	# Check if we're doing a dry run
-	if settings["dry_run_twitter"]:
-		print(PREFIX_TW, "Dry run, not really posting to Twitter. FOR TESTING PURPOSES.")
-	if settings["dry_run_mastodon"]:
-		print(PREFIX_MA, "Dry run, not really posting to Mastodon. FOR TESTING PURPOSES.")
+	# Check which networks are enabled
+	if not settings["TWITTER_ENABLED"]:
+		print(PREFIX_TW, "Twitter disabled")
+	if not settings["MASTODON_ENABLED"]:
+		print(PREFIX_MA, "Mastodon disabled")
+	if not settings["BLUESKY_ENABLED"]:
+		print(PREFIX_BS, "Bluesky disabled")
 	
 	# Setup Twitter AUTH and FOLLOWBACK THREAD
 	twitter_api = "NULL"
-	if not settings["dry_run_twitter"]:
+	if settings["TWITTER_ENABLED"]:
 		twitter_api = setupTwitterAuth()
 		if settings["followback_twitter"]:
 			twitter_followback_thread = threading.Thread(target=twitterFollowBackThread, args=(twitter_api,))
 
 	# Setup Mastodon AUTH
 	mastodon_api = "NULL"
-	if not settings["dry_run_mastodon"]:
+	if settings["MASTODON_ENABLED"]:
 		mastodon_api = setupMastodonAuth()
+
+	# Setup Bluesky AUTH
+	bluesky_api = "NULL"
+	if settings["BLUESKY_ENABLED"]:
+		bluesky_api = setupBlueskyAuth()
 
 	print(PREFIX, "End of setup")
 	# MAIN LOOP
@@ -165,9 +189,9 @@ def main():
 	print(PREFIX, "Starting main loop")
 	while True:
 		if int(settings["line_index"]) < len(lines):
-			# SLEEP (skip if we're in a dry run)
-			if settings["dry_run_twitter"] and settings["dry_run_mastodon"]:
-				time.sleep(0.2)
+			# SLEEP (skip if we're in fully disabled run)
+			if not settings["TWITTER_ENABLED"] and not settings["MASTODON_ENABLED"] and not settings ["BLUESKY_ENABLED"]:
+				time.sleep(2) # NO SERVICES ENABLED, SO DEFAULT 2 SECOND PAUSE TO TEST
 			else:
 				sleeploop()
 
@@ -176,26 +200,31 @@ def main():
 			current_line=lines[current_index]
 			print(PREFIX, "Current line:", current_line, "[", current_index,"]")
 
-			# TWEET
-			if not settings["dry_run_twitter"]:
+			# TWITTER
+			if settings["TWITTER_ENABLED"]:
 				tweetLine(twitter_api, current_line)
 			else:
-				print(PREFIX_TW, "(DRY RUN) Tweeting")
+				print(PREFIX_TW, "(DISABLED) Tweeting")
 			
-			# TOOT
-			if not settings["dry_run_mastodon"]:
+			# MASTODON
+			if settings["MASTODON_ENABLED"]:
 				tootLine(mastodon_api, current_line)
 			else:
-				print(PREFIX_MA, "(DRY RUN) Tooting")
+				print(PREFIX_MA, "(DISABLED) Tooting")
+
+			# BLUESKY
+			if settings["BLUESKY_ENABLED"]:
+				skeetLine(bluesky_api, current_line)
+			else:
+				print(PREFIX_BS, "(DISABLED) Skeeting")
 
 			# INCREMENT QUOTE INDEX
 			settings["line_index"] = current_index + 1
 			saveSettings()
 
 			# MANAGE TWITTER FOLLOWBACK THREAD
-			if not settings["dry_run_twitter"] and settings["followback_twitter"]:
+			if settings["TWITTER_ENABLED"] and settings["TWITTER_FOLLOWBACK"]:
 				manageTwitterFollowBackThread(twitter_api, twitter_followback_thread)
-
 		else:
 			print(PREFIX, "Ran out of lines")
 			if not settings["loop"]:
