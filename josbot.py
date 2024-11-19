@@ -170,7 +170,7 @@ def main():
 	twitter_api = "NULL"
 	if settings["TWITTER_ENABLED"]:
 		twitter_api = setupTwitterAuth()
-		if settings["followback_twitter"]:
+		if settings["TWITTER_FOLLOWBACK"]:
 			twitter_followback_thread = threading.Thread(target=twitterFollowBackThread, args=(twitter_api,))
 
 	# Setup Mastodon AUTH
