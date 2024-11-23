@@ -39,7 +39,7 @@ The following options are available
  
 # Currently deployed as [@dejossen](http://twitter.com/dejossen), [@dejossen@mastodon-belgium.be](https://mastodon-belgium.be/@dejossen) and [@dejossen.bsky.social](https://bsky.app/profile/dejossen.bsky.social).
 
-Currently used to post lines from the play *De Jossen* by Tom Lanoye. That's where the name of this bot comes from. Live on [@dejossen](http://twitter.com/dejossen) and [dejossen@mastodon-belgium.be](https://mastodon-belgium.be/@dejossen). In march 2023, I rewrote this bot so it became more general and can be used for any .txt-based lines of content.
+Currently used to post lines from the absurdist play *De Jossen* by Tom Lanoye. That's where the name of this bot comes from. In March 2023, I rewrote this bot so it became more general and can be used for any .txt-based lines of content.
 
 The full play got manually restructured to 426 lines of each 140 characters max, starting from the [original text](https://github.com/Forceflow/josbot/raw/main/De-Jossen.-Val-en-revival-der-saamhorigheid.pdf) which was released publicly on 2014 on Tom Lanoye's website. Tried to keep consistency when splitting lines in multiple posts, so there's never a split mid-sentence.
 
