@@ -8,9 +8,7 @@ Written for Python 3. Required libraries:
  * [atproto](https://pypi.org/project/atproto/) for Bluesky API interaction.
  * [YAML](http://www.yaml.org/) for reading/writing the settings file. 
 
-How to get these:
- * Ubuntu/Debian: `sudo apt-get install python3 python3-tweepy python3-yaml python3-mastodon`
- * Using pip3: `pip3 install tweepy pyaml Mastodon.py atproto` (or `pip3 install -r requirements.txt`)
+You can get these using pip3: `pip3 install tweepy pyaml Mastodon.py atproto` (or `pip3 install -r requirements.txt`)
 
 ## Setup & running
 Run ``python3 josbot.py``
